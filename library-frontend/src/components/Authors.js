@@ -10,7 +10,6 @@ const Authors = (props) => {
   if(result.loading)
     return <div>loading...</div>
 
-  console.log(result.data)
   const byBornYearDesc = (a,b) => b.born - a.born
   const authors = result.data.allAuthors.slice().sort(byBornYearDesc)
 
