@@ -3,7 +3,7 @@ import { useState } from "react";
 import { CHANGE_AUTHOR, ALL_AUTHORS } from "../queries";
 import { useMutation } from "@apollo/client";
 
-const UpdateAuthorForm = () => { 
+const UpdateAuthorForm = ({authors}) => { 
     const [name, setName] = useState('')
     const [born, setBorn] = useState('')
     const [changeAuthor] = useMutation(CHANGE_AUTHOR, { refetchQueries: [{ query: ALL_AUTHORS }] })
@@ -18,7 +18,11 @@ const UpdateAuthorForm = () => {
         <>
             <h3>Set birthyear</h3>
             <form onSubmit = {handleSubmit}>
-                <div>name <input name='name' value={name} onChange={({target}) => setName(target.value)}></input></div>
+                <select value={name} onChange={({target}) => setName(target.value)}>
+                    {
+                        authors.map( author => <option key={author.id} value={author.name}> {author.name} </option>)
+                    }
+                </select>
                 <div>born <input name='born' value={born} onChange={({target}) => setBorn(target.value)}></input></div>
                 <button type='submit'>update author</button>
             </form>
