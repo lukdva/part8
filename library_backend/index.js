@@ -1,5 +1,9 @@
 const { ApolloServer, gql } = require('apollo-server')
 const { v1: uuid } = require('uuid')
+const mongoose = require('mongoose')
+const {MONGO_URI} = require('./config')
+const Book = require('./models/book')
+const Author = require('./models/author')
 
 let authors = [
   {
@@ -97,7 +101,7 @@ const typeDefs = gql`
   type Book {
     title: String!
     published: Int!
-    author: String!
+    author: Author!
     id: ID!
     genres: [String]!
   }
@@ -153,15 +157,18 @@ const resolvers = {
     }
   },
   Mutation: {
-    addBook: (root, args) => {
-      const book = {...args, id: uuid()}
-      books.push(book)
-      if(!authors.find(author => author.name === args.author))
-        {
-          const author = {name: args.author, id: uuid()}
-          authors.push(author)
-        }
-      return book
+    addBook: async (root, args) => {
+      let author = await Author.findOne({name: args.author})
+      if(!author){
+        const newAuthor = new Author({name: args.author})
+        author = await newAuthor.save()
+      }
+      const book = new Book({...args, author:author._id})
+      
+      const result = await book.save()
+      console.log(result)
+      const populatedResult = await result.populate('author')
+      return populatedResult
     },
     editAuthor: (root, args) => {
       const authorToEdit = authors.find(author => author.name === args.name)
@@ -173,6 +180,14 @@ const resolvers = {
     }
   }
 }
+
+mongoose.connect(MONGO_URI)
+.then(() => {
+    console.log('connected to mongoDB')
+})
+.catch(err => {
+    console.log('error connecting to MongoDB: ', err);
+})
 
 const server = new ApolloServer({
   typeDefs,
