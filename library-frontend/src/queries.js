@@ -31,7 +31,11 @@ mutation createBook(
     ) {
         addBook(title: $title, author: $author, published: $published, genres: $genres){
             title
-            author
+            author {
+                id
+                name
+                born
+            }
             published
             genres
             id
@@ -51,5 +55,13 @@ mutation changeAuthor(
         name
         born
     }
+}
+`
+export const LOGIN = gql`
+mutation
+doLogin($username: String!, $password: String!){
+  login(username: $username, password: $password) {
+      value
+  }
 }
 `

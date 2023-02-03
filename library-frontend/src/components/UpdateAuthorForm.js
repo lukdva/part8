@@ -4,7 +4,7 @@ import { CHANGE_AUTHOR, ALL_AUTHORS } from "../queries";
 import { useMutation } from "@apollo/client";
 
 const UpdateAuthorForm = ({authors}) => { 
-    const [name, setName] = useState('')
+    const [name, setName] = useState(authors.at(0)? authors.at(0).name : '')
     const [born, setBorn] = useState('')
     const [changeAuthor] = useMutation(CHANGE_AUTHOR, { refetchQueries: [{ query: ALL_AUTHORS }] })
 
