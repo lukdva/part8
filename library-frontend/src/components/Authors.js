@@ -13,6 +13,7 @@ const Authors = (props) => {
 
   const byBornYearDesc = (a,b) => b.born - a.born
   const authors = result.data.allAuthors.slice().sort(byBornYearDesc)
+  console.log(authors)
 
   return (
     <div>
@@ -25,6 +26,7 @@ const Authors = (props) => {
             <th>books</th>
           </tr>
           {authors.map((a) => (
+            
             <tr key={a.name}>
               <td>{a.name}</td>
               <td>{a.born}</td>

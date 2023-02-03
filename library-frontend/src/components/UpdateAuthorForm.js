@@ -20,7 +20,7 @@ const UpdateAuthorForm = ({authors}) => {
             <form onSubmit = {handleSubmit}>
                 <select value={name} onChange={({target}) => setName(target.value)}>
                     {
-                        authors.map( author => <option key={author.id} value={author.name}> {author.name} </option>)
+                        authors.map( author => <option key={author.name} value={author.name}> {author.name}</option> )
                     }
                 </select>
                 <div>born <input name='born' value={born} onChange={({target}) => setBorn(target.value)}></input></div>
