@@ -1,24 +1,24 @@
 import { useQuery } from '@apollo/client'
 import { useState } from 'react'
-import { ALL_BOOKS } from '../queries'
+import { ALL_GENRES } from '../queries'
 import GenreFilter from './GenreFilter'
 import BookList from './BookList'
 
 const Books = ({show}) => {
   const [genre, setGenre] = useState('all')
-  const result = useQuery(ALL_BOOKS)
+  const result = useQuery(ALL_GENRES)
   if (!show) {
     return null
   }
   if(result.loading)
-    return <div>loading...</div>
+    return null
 
-  const books = result.data.allBooks
+  const allGenres = result.data.allBooks
 
   const genres = [...new Set(
-    books.reduce(
-      (first, second) => {
-        return first.concat(second.genres)
+    allGenres.reduce(
+      (accumulation, value) => {
+        return accumulation.concat(value.genres)
       }, [])
     )]
 
@@ -26,7 +26,7 @@ const Books = ({show}) => {
     <div>
       <h2>Books</h2>
       <div>in genre <b>{genre}</b></div>
-      <BookList books={books.filter(book => genre === 'all'? true : book.genres.includes(genre))}/>
+      <BookList filters={genre==='all'? null : {genre}}/>
       <GenreFilter setGenre={setGenre} genres={genres}/>
     </div>
   )

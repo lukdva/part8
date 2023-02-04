@@ -9,20 +9,26 @@ query {
     }
 }
 `
-
-export const ALL_BOOKS = gql`
+export const ALL_GENRES = gql`
 query {
     allBooks {
-        title
-        author {
-            name
-        }
-        published
         genres
     }
 }
 `
-
+export const ALL_BOOKS = gql`
+query getFilteredBooks($genre: String, $author: String) {
+    allBooks(author:$author genre:$genre) {
+      title
+      published
+      author {
+        name
+      }
+      genres,
+      id
+    }
+  }
+`
 export const CREATE_BOOK = gql`
 mutation createBook(
         $title: String!
