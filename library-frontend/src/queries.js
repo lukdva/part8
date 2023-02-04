@@ -66,3 +66,13 @@ doLogin($username: String!, $password: String!){
   }
 }
 `
+
+export const ME = gql`
+query{
+    me {
+      username
+      id
+      favouriteGenre
+    }
+  }
+  `
