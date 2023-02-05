@@ -1,11 +1,14 @@
-const { UserInputError, AuthenticationError } = require('@apollo/server')
+const { GraphQLError } = require('graphql')
+const { PubSub } = require('graphql-subscriptions')
 const Author = require('./models/author')
 const User = require('./models/user')
 const Book = require('./models/book')
 const jwt = require('jsonwebtoken')
-require('dotenv').config();
-const JWT_SECRET = process.env.JWT_SECRET;
 
+require('dotenv').config();
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const pubsub = new PubSub()
 
 const resolvers = {
   Query: {
@@ -50,7 +53,7 @@ const resolvers = {
     addBook: async (root, args, context) => {
       const currentUser = context.currentUser
       if (!currentUser) {
-        throw new AuthenticationError("not authenticated")
+        throw new GraphQLError("not authenticated")
       }
 
       let author = await Author.findOne({name: args.author})
@@ -59,7 +62,13 @@ const resolvers = {
         try {
           author = await newAuthor.save()
         } catch (error) {
-          throw new UserInputError(error.message, {invalidArgs: args})
+          throw new GraphQLError(error.message, {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args.name,
+              error
+            }
+          })
         }
       }
       const book = new Book({...args, author:author._id})
@@ -68,15 +77,28 @@ const resolvers = {
       try {
         bookResult = await book.save()
       } catch (error) {
-        throw new UserInputError(error.message, {invalidArgs: args})
+        throw new GraphQLError(error.message, {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args.name,
+              error
+            }
+          })
       }
       const populatedResult = await bookResult.populate('author')
+      
+      pubsub.publish('BOOK_ADDED', {bookAdded: populatedResult})
+
       return populatedResult
     },
     editAuthor: async (root, args, context) => {
       const currentUser = context.currentUser
       if (!currentUser) {
-        throw new AuthenticationError("not authenticated")
+        throw new GraphQLError("not authenticated", {
+            extensions: {
+                code: 'BAD_USER_INPUT'
+              }
+        })
       }
       const authorToEdit = await Author.findOne({name: args.name})
       if(!authorToEdit)
@@ -94,13 +116,22 @@ const resolvers = {
       const user = await User.findOne({ username: args.username })
 
       if ( !user || args.password !== 'secret' ) {
-        throw new UserInputError("wrong credentials")
+        throw new GraphQLError("wrong credentials", {
+            extensions: {
+                code: 'UNAUTHENTICATED'
+              }
+        })
       }
       const userForToken = {
         username: user.username,
         id: user._id,
       }
       return { value: jwt.sign(userForToken, JWT_SECRET) }
+    }
+  },
+  Subscription: {
+    bookAdded: {
+        subscribe: () => pubsub.asyncIterator('BOOK_ADDED')
     }
   }
 }
