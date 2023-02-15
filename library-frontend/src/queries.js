@@ -82,3 +82,18 @@ query{
     }
   }
   `
+
+  export const BOOK_ADDED_SUBSCRIPTION = gql`
+  subscription {
+
+    bookAdded {
+      title
+        published
+        author {
+          name
+        }
+        genres,
+        id
+    }
+  }
+  `

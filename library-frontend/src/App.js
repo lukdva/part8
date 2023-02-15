@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useSubscription } from '@apollo/client'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Login from './components/Login'
 import Recommendations from './components/Recommendations'
+import { BOOK_ADDED_SUBSCRIPTION } from './queries'
 
 const App = () => {
   const [page, setPage] = useState('authors')
@@ -17,7 +19,13 @@ const App = () => {
     const storageToken = localStorage.getItem('user-token')
     setToken(storageToken)
   }, [])
-  
+
+  useSubscription(BOOK_ADDED_SUBSCRIPTION, {
+    onData: ({ data }) => {
+      window.alert(`New book was added ${data.data.bookAdded.title}`)
+    }
+  })
+
   return (
     <div>
       <div>
