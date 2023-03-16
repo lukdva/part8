@@ -38,11 +38,11 @@ const resolvers = {
     },
     allAuthors: async () => {
       let authors = await Author.find({})
-      authors = authors.map( async author => {
-        const books = await Book.find({author: author._id
-        })
-        return {...author.toObject(), bookCount: books.length}
-      })
+      // authors = authors.map( async author => {
+      //   const books = await Book.find({author: author._id
+      //   })
+      //   return {...author.toObject(), bookCount: books.length}
+      // })
       return authors
     },
     me: async (root, args, context) => {
@@ -58,7 +58,7 @@ const resolvers = {
 
       let author = await Author.findOne({name: args.author})
       if(!author){
-        const newAuthor = new Author({name: args.author})
+        const newAuthor = new Author({name: args.author, bookCount: 0})
         try {
           author = await newAuthor.save()
         } catch (error) {
@@ -72,10 +72,12 @@ const resolvers = {
         }
       }
       const book = new Book({...args, author:author._id})
+      author.bookCount = author.bookCount + 1
       let bookResult;
       
       try {
         bookResult = await book.save()
+        await author.save()
       } catch (error) {
         throw new GraphQLError(error.message, {
             extensions: {
